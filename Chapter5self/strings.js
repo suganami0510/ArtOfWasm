@@ -20,7 +20,7 @@ let importObject = {
     },
     len_prefix: function (str_pos) {
       const str_len = new Uint8Array(memory.buffer, str_pos, 1)[0]; // 1バイト目を取り出して定数に保存
-      const bytes = new Uint8Array(memory.buffer, str_pos + 1, str_len);
+      const bytes = new Uint8Array(memory.buffer, str_pos + 1, str_len); // 1バイト目が文字列の長さとして保存されているので、そのバイト数
       let log_string = new TextDecoder('utf8').decode(bytes);
       console.log(log_string);
     },
