@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hex and Binary</title>
+  </head>
+  <script>
+    // 64kbのメモリ
+    const memory = new WebAssembly.Memory({ initial: 1 });
+    let output = null;
+
+    // Wasmモジュールがインスタンス化されると関数が設定される
+    let setOutput = (number) => {
+      // wasmモジュールがインスタンス化される前にこの関数を実行すると、このメッセージが表示
+      console.log('function not available');
+      return 0;
+    };
+
+    // この関数はボタンクリックによって呼び出され、
+    // WASMモジュールのsetOuput関数を呼び出す
+    function setNumbers(number) {
+      if (output == null) {
+        return;
+      }
+
+      // WebAssemblyのsetOutput関数を呼び出すとHTML文字列が作成され、線形メモリに格納され、その長さが返される
+      let len = setOutput(number);
+
+      // 線形メモリのHTML文字列文字列の位置と長さはわかっているので、メモリバッファから文字列を取り出すことができる。
+      let bytes = new Uint8Array(memory.buffer, 1024, len);
+
+      // 線形メモリから取り出したバイトをJS文字列に変換、OUTPUTのHTMLを設定
+      output.innerHTML = new TextDecoder('utf8').decode(bytes);
+    }
+
+    function onPageLoad() {
+      output = document.getElementById('output');
+      let message_num = 0;
+    }
+
+    let importObject = {
+      env: {
+        buffer: memory,
+      },
+    };
+
+    (async () => {
+      let obj = await WebAssembly.instantiateStreaming(
+        fetch('hex_and_binary.wasm'),
+        importObject
+      );
+
+      console.log('wasm import');
+      setOutput = obj.instance.exports.setOutput; // setOutputにWASMモジュールのsetOutput関数を代入
+      console.log('wasm import done');
+      let btn = document.getElementById('set_numbers_button');
+      btn.style.display = 'block';
+    })();
+  </script>
+  <body
+    onload="onPageLoad()"
+    style="font-family: 'Courier New', Courier, monospace"
+  >
+    <div id="output">
+      <!-- displays output from WebAssembly -->
+      <h1>0</h1>
+      <h4>0x0</h4>
+      <h4>0000 0000 0000 0000 0000 0000 0000 0000</h4>
+    </div>
+    <br />
+    <!-- user enters input to convert to hex and binary here -->
+    <input type="number" id="val" value="0" /><br /><br />
+    <!-- when user clicks this button, the WASM function is run -->
+    <button
+      id="set_numbers_button"
+      type="button"
+      style="display: none"
+      onclick="setNumbers( document.getElementById('val').value )"
+    >
+      Set Numbers
+    </button>
+  </body>
+</html>
