@@ -24,6 +24,6 @@
   "devDependencies": {
     "benchmark": "^2.1.4",
     "connect": "^3.7.0",
-    "serve-static": "^1.15.0"
+    "serve-static": "^1.16.2"
   }
 }
